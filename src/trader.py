@@ -1,6 +1,7 @@
 import requests
 import datetime as dt
 import os
+import sqlite3
 
 key = os.environ["APIKEY"]
 
@@ -80,7 +81,7 @@ class Trader:
     def adjust_balance(self, price, quantity):
         self.balance -= price * quantity
 
-    def adjust_holdings(self, asx_code, transaction_date, transaction, buy_sell_flag):
+    def adjust_holdings(self, asx_code, transaction_date, transaction):
         if self.check_holdings(asx_code) == 1:
             self.holdings[asx_code] = transaction
         else:
@@ -100,9 +101,9 @@ class Trader:
     def buy(self, asx_code, date, price, quantity):
         transaction_date, transaction = self.transact(asx_code, date, price, quantity)
         self.adjust_balance(price, quantity)
-        self.adjust_holdings(asx_code, transaction_date, transaction, 0)
+        self.adjust_holdings(asx_code, transaction_date, transaction)
 
     def sell(self, asx_code, date, price, quantity):
         transaction_date, transaction = self.transact(asx_code, date, price, -quantity)
         self.adjust_balance(price, quantity)
-        self.adjust_holdings(asx_code, transaction_date, transaction, 1)
+        self.adjust_holdings(asx_code, transaction_date, transaction)
