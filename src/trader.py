@@ -4,6 +4,8 @@ import os
 import sqlite3
 
 key = os.environ["APIKEY"]
+conn = sqlite3.connect("data.sqlite3")
+c = conn.cursor()
 
 
 class Stock:
@@ -11,7 +13,7 @@ class Stock:
         self.baseUrl = "https://www.alphavantage.co/query?"
         self.apiKey = str(key)
 
-    def get_data(self, asx_code):
+    def get_update(self, asx_code):
         params = {
             "function": "TIME_SERIES_DAILY",
             "symbol": asx_code + ".AX",
@@ -19,6 +21,42 @@ class Stock:
             "apikey": self.apiKey
         }
         return requests.get(self.baseUrl, params=params).json()
+
+    def get_data(self, asx_code):
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS asx_data (
+                date TEXT,
+                asx_code VARCHAR(5),
+                data TEXT,
+                PRIMARY KEY(date, asx_code)
+            )
+        """)
+        conn.commit()
+        c.execute("""
+            SELECT * 
+            FROM asx_data
+            WHERE asx_code = ?
+        """, (asx_code,))
+        share_data = c.fetchall()
+        if len(share_data) == 0:
+            r = self.get_update(asx_code)
+            c.execute("""
+                INSERT INTO asx_data VALUES (?, ?, ?)
+            """, (dt.date.today().strftime("%Y-%m-%d"), asx_code, str(r)))
+            conn.commit()
+            return r
+        elif len(share_data) > 0 and dt.date.fromisoformat(share_data[0][0]) != dt.date.today():
+            r = self.get_update(asx_code)
+            c.execute("""
+                DELETE FROM asx_data WHERE date = ? AND asx_code = ?
+            """, (share_data[0][0], share_data[0][1]))
+            c.execute("""
+                INSERT INTO asx_data VALUES (?, ?, ?)
+            """, (dt.date.today().strftime("%Y-%m-%d"), asx_code, str(r)))
+            conn.commit()
+            return r
+        else:
+            return share_data[0][2]
 
 
 class Trader:
