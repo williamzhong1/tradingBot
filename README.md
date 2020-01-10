@@ -43,7 +43,10 @@ Alternatively you may inherit these buy sell methods and build a strategy around
 
 ### Prerequisites
 
-This project depends on the `requests` module which can be installed with `pip` or `conda`
+This project depends on the `requests` module which can be installed with `pip` or `conda`.
+
+The project also depends on `sqlite3` and `datetime` but these should be included in the standard library
+and do not need to be installed.
 
 This project also requires an API key which is set an environment variable APIKEY. Alternatively you may open the 
 `trader.py` and set the variable in `11` which currently reads `self.apiKey = str(key)` to your API key.
