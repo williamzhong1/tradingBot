@@ -4,17 +4,22 @@ import datetime
 from unittest.mock import patch
 
 
+# Testing stock function will make API call.
+
+"""
 class TestStock(unittest.TestCase):
     def test_get_data(self):
         bhp = trader.Stock()
         test_data = bhp.get_data("BHP")
         self.assertEqual("BHP", test_data["Meta Data"]["2. Symbol"][:3])
+"""
+
 
 
 class TestTrader(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.sample_trader = trader.Trader(10000, "2020-01-01", 100)
+        self.sample_trader = trader.Trader(100000000, "2020-01-01", 100)
 
     def test_init_datetime_convert(self):
         self.assertIsInstance(self.sample_trader.start, datetime.date)
@@ -65,7 +70,7 @@ class TestTrader(unittest.TestCase):
         self.assertRaises(NameError, self.sample_trader.check_market, "BHP", "2020-01-01", 100)
         self.sample_trader.add_data("BHP")
         self.assertRaises(KeyError, self.sample_trader.check_market, "BHP", "2000-01-01", 100)
-        self.assertIsNone(self.sample_trader.check_market("BHP", "2020-01-03", 100))
+        self.assertRaises(KeyError, self.sample_trader.check_market, "BHP", "2020-01-03", 100)
         self.assertEqual(self.sample_trader.check_market("BHP", "2020-01-03", 39.80), "2020-01-03")
 
     @patch("trader.Stock.get_data", return_value={
@@ -78,7 +83,11 @@ class TestTrader(unittest.TestCase):
                            '3. low': '39.7900', '4. close': '40.0300',
                            '5. volume': '5272166'}}
     })
-
+    def test_buy(self, mock_stock_data):
+        self.sample_trader.buy("BHP", "2020-01-01", 40, 10)
+        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-03"]["quantity"], 10)
+        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-03"]["purchase price"], 40)
+        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-03"]["order date"], "2020-01-01")
 
 
 if __name__ == "__main__":

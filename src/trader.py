@@ -51,25 +51,38 @@ class Trader:
             raise NameError("Data for {} is missing. Retrieve data first by calling ADD DATA method".format(asx_code))
         else:
             if dt.date.fromisoformat(attempted_purchase_date) not in self.date_range:
-                raise KeyError("Date outside date range to initialise trader. Initialise a date including {}".format(attempted_purchase_date))
-            elif attempted_purchase_date not in self.data[asx_code]["Time Series (Daily)"].keys():
-                raise KeyError("Market data not available for {}.".format(attempted_purchase_date))
+                raise KeyError("Date outside date range to initialise trader. Initialise a date including {}".format(
+                    attempted_purchase_date))
             else:
-                trading_days = set(self.data[asx_code]["Time Series (Daily)"].keys()) & set(x.strftime("%Y-%m-%d") for x in self.date_range)
-                for i in trading_days:
-                    prices = self.data[asx_code]["Time Series (Daily)"][i]
+                trading_days = set(self.data[asx_code]["Time Series (Daily)"].keys()) & set(
+                    x.strftime("%Y-%m-%d") for x in self.date_range)
+                trading_days = sorted(trading_days)
+                deltas = [dt.date.fromisoformat(x) - dt.date.fromisoformat(attempted_purchase_date) for x in
+                          trading_days]
+                if attempted_purchase_date not in trading_days:
+                    deltas = [x for x in deltas if x >= dt.timedelta(0)]
+                    """
+                    Only want positive deltas because negative deltas mean the trading date occurred before the 
+                    attempted purchase date. Cannot go back in time to perform a trade therefore only positive 
+                    time deltas are included.
+                    """
+                for i in deltas:
+                    potential_purchase_date = dt.date.fromisoformat(attempted_purchase_date) + i
+                    prices = self.data[asx_code]["Time Series (Daily)"][potential_purchase_date.strftime("%Y-%m-%d")]
                     if float(prices["3. low"]) <= purchase_price <= float(prices["2. high"]):
-                        return i
+                        return potential_purchase_date.strftime("%Y-%m-%d")
+                    else:
+                        raise KeyError("Cannot purchase at {}.".format(purchase_price))
 
     def buy(self, asx_code, date, purchase_price, quantity):
         if self.check_data(asx_code) == 1:
             self.add_data(asx_code)
-        transaction_date = self.check_market(asx_code, date)
+        transaction_date = self.check_market(asx_code, date, purchase_price)
         if self.balance >= purchase_price * quantity:
             transaction = {transaction_date: {
                 "purchase price": purchase_price,
                 "quantity": quantity,
-                "order_date": date
+                "order date": date
             }}
         self.balance -= purchase_price * quantity
         if self.check_holdings(asx_code) == 1:
@@ -78,4 +91,3 @@ class Trader:
             current_holdings = self.holdings[asx_code]
             current_holdings[date] = transaction
             self.holdings.update(current_holdings)
-
