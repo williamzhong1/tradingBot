@@ -3,7 +3,7 @@ import trader
 import datetime
 from unittest.mock import patch
 
-# Testing stock function will make API call.
+# Testing Stock class will make API call. Commented out to reduce frequency of API calls.
 
 """
 class TestStock(unittest.TestCase):
