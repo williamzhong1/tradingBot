@@ -39,7 +39,7 @@ simple_trader.holdings
 
 Alternatively you may inherit these buy sell methods and build a strategy around that:
 
-`class strategy(trader.Trader)`
+`class strategy(trader.Trader)...`
 
 ### Prerequisites
 
