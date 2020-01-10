@@ -23,7 +23,7 @@ simple_trader.buy("BHP", "2020-01-02", 40, 10)
 The arguments are `..(asx_code, order_date, purchase_price, quantity)`. So here, we ordered the `simple_trader` to buy
 `10` `BHP` shares on the `2/1/2020` at `$40`. If the transaction cannot be completed on the order date, the trader will 
 search for the next possible time. A transaction typically could not be completed because the market was not open on 
-the desired date, or at that price. 
+the desired date, or the share is not purchasable at that price.
 
 An order to sell a share takes similar arguments:
 
