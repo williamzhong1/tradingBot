@@ -41,4 +41,8 @@ simple_trader.holdings
 
 This project depends on the `requests` module which can be installed with `pip` or `conda`
 
-This project also requires an API key.
+This project also requires an API key which is set an environment variable APIKEY. Alternatively you may open the 
+`trader.py` and set the variable in `11` which currently reads `self.apiKey = str(key)` to your API key.
+
+You can obtain an API key from: https://www.alphavantage.co/
+
