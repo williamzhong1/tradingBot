@@ -37,6 +37,10 @@ You can complete a series of transactions in this way. At any time you may ask f
 simple_trader.holdings
 ```
 
+Alternatively you may inherit these buy sell methods and build a strategy around that:
+
+`class `
+
 ### Prerequisites
 
 This project depends on the `requests` module which can be installed with `pip` or `conda`
