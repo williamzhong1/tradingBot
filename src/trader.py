@@ -77,6 +77,12 @@ class Trader:
         }}
         return transaction_date, transaction
 
+    def brokerage(transaction_amount):
+        if transaction_amount > 9999.99:
+            return transaction_amount * 0.31 / 100
+        elif transaction_amount <= 9999.99:
+            return 29.95
+
     def adjust_balance(self, price, quantity):
         self.balance -= price * quantity
 
