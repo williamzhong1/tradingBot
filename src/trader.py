@@ -1,11 +1,14 @@
 import requests
 import datetime as dt
+import os
+
+key = os.environ["APIKEY"]
 
 
 class Stock:
     def __init__(self):
         self.baseUrl = "https://www.alphavantage.co/query?"
-        self.apiKey = ""
+        self.apiKey = str(key)
 
     def get_data(self, asx_code):
         params = {
@@ -40,19 +43,23 @@ class Trader:
             return 1
 
     def add_data(self, asx_code):
-        self.data[asx_code] = Stock.get_data(asx_code)
+        stock = Stock()
+        self.data[asx_code] = stock.get_data(asx_code)
 
-    def check_market(self, asx_code, attempted_purchase_date):
+    def check_market(self, asx_code, attempted_purchase_date, purchase_price):
         if self.check_data(asx_code) == 1:
-            raise Exception("Data for {} is missing. Retrieve data first by calling ADD DATA method".format(asx_code))
+            raise NameError("Data for {} is missing. Retrieve data first by calling ADD DATA method".format(asx_code))
         else:
             if dt.date.fromisoformat(attempted_purchase_date) not in self.date_range:
-                raise Exception("Date for trade outside parameters.")
+                raise KeyError("Date outside date range to initialise trader. Initialise a date including {}".format(attempted_purchase_date))
+            elif attempted_purchase_date not in self.data[asx_code]["Time Series (Daily)"].keys():
+                raise KeyError("Market data not available for {}.".format(attempted_purchase_date))
             else:
-                for i in self.date_range:
-                    prices = self.data[asx_code]["Time Series (Daily)"][str(i)]
-                    if float(prices["3. low"]) <= attempted_purchase_date <= float(prices["2. high"]):
-                        return str(i)
+                trading_days = set(self.data[asx_code]["Time Series (Daily)"].keys()) & set(x.strftime("%Y-%m-%d") for x in self.date_range)
+                for i in trading_days:
+                    prices = self.data[asx_code]["Time Series (Daily)"][i]
+                    if float(prices["3. low"]) <= purchase_price <= float(prices["2. high"]):
+                        return i
 
     def buy(self, asx_code, date, purchase_price, quantity):
         if self.check_data(asx_code) == 1:
@@ -72,6 +79,3 @@ class Trader:
             current_holdings[date] = transaction
             self.holdings.update(current_holdings)
 
-
-BHP = Stock()
-print(BHP.get_data("BHP"))
