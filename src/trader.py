@@ -78,7 +78,7 @@ class Trader:
         }}
         return transaction_date, transaction
 
-    def brokerage(transaction_amount):
+    def brokerage(self, transaction_amount):
         if transaction_amount > 9999.99:
             return transaction_amount * 0.31 / 100
         elif transaction_amount <= 9999.99:
