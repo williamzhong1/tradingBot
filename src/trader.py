@@ -46,7 +46,7 @@ class Trader:
         stock = Stock()
         self.data[asx_code] = stock.get_data(asx_code)
 
-    def check_market(self, asx_code, attempted_purchase_date, purchase_price):
+    def check_market(self, asx_code, attempted_purchase_date, price):
         if self.check_data(asx_code) == 1:
             raise NameError("Data for {} is missing. Retrieve data first by calling ADD DATA method".format(asx_code))
         else:
@@ -61,29 +61,48 @@ class Trader:
                                 dt.date.fromisoformat(attempted_purchase_date)]
                 for i in trading_days:
                     prices = self.data[asx_code]["Time Series (Daily)"][i]
-                    if float(prices["3. low"]) <= purchase_price <= float(prices["2. high"]):
+                    if float(prices["3. low"]) <= price <= float(prices["2. high"]):
                         return i
                     else:
-                        raise KeyError("Cannot purchase at {}.".format(purchase_price))
+                        raise KeyError("Cannot transact at {}. Outside high and low price range".format(price))
 
-    def buy(self, asx_code, date, purchase_price, quantity):
+    def transact(self, asx_code, date, price, quantity):
         if self.check_data(asx_code) == 1:
             self.add_data(asx_code)
-        transaction_date = self.check_market(asx_code, date, purchase_price)
-        if self.balance >= purchase_price * quantity:
-            transaction = {transaction_date: {
-                "purchase_price": purchase_price,
-                "quantity": quantity,
-                "order_date": date
-            }}
-        self.balance -= purchase_price * quantity
+        transaction_date = self.check_market(asx_code, date, price)
+        transaction = {transaction_date: {
+            "price": price,
+            "quantity": quantity,
+            "order_date": date
+        }}
+        return transaction_date, transaction
+
+    def adjust_balance(self, price, quantity):
+        self.balance -= price * quantity
+
+    def adjust_holdings(self, asx_code, transaction_date, transaction, buy_sell_flag):
         if self.check_holdings(asx_code) == 1:
             self.holdings[asx_code] = transaction
-        elif self.check_holdings(asx_code) == 0 and transaction_date in self.holdings[asx_code].keys():
-            self.holdings[asx_code][transaction_date]["purchase_price"] = transaction[transaction_date]["purchase_price"]
-            old_quantity = self.holdings[asx_code][transaction_date]["quantity"]
-            new_quantity = old_quantity + transaction[transaction_date]["quantity"]
-            self.holdings[asx_code][transaction_date]["quantity"] = new_quantity
-            self.holdings[asx_code][transaction_date]["order_date"] = transaction[transaction_date]["order_date"]
         else:
-            self.holdings[asx_code][transaction_date] = transaction[transaction_date]
+            if self.check_holdings(asx_code) == 0 and transaction_date in self.holdings[asx_code].keys():
+                self.holdings[asx_code][transaction_date]["price"] = transaction[transaction_date][
+                    "price"]
+                old_quantity = self.holdings[asx_code][transaction_date]["quantity"]
+                if transaction[transaction_date]["quantity"] < 0:
+                    new_quantity = old_quantity - transaction[transaction_date]["quantity"]
+                else:
+                    new_quantity = old_quantity + transaction[transaction_date]["quantity"]
+                self.holdings[asx_code][transaction_date]["quantity"] = new_quantity
+                self.holdings[asx_code][transaction_date]["order_date"] = transaction[transaction_date]["order_date"]
+            else:
+                self.holdings[asx_code][transaction_date] = transaction[transaction_date]
+
+    def buy(self, asx_code, date, price, quantity):
+        transaction_date, transaction = self.transact(asx_code, date, price, quantity)
+        self.adjust_balance(price, quantity)
+        self.adjust_holdings(asx_code, transaction_date, transaction, 0)
+
+    def sell(self, asx_code, date, price, quantity):
+        transaction_date, transaction = self.transact(asx_code, date, price, -quantity)
+        self.adjust_balance(price, quantity)
+        self.adjust_holdings(asx_code, transaction_date, transaction, 1)
