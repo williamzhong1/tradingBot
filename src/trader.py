@@ -107,9 +107,11 @@ class Trader:
     def buy(self, asx_code, date, price, quantity):
         transaction_date, transaction = self.transact(asx_code, date, price, quantity)
         self.adjust_balance(price, quantity)
+        self.balance -= self.brokerage(price * quantity)
         self.adjust_holdings(asx_code, transaction_date, transaction)
 
     def sell(self, asx_code, date, price, quantity):
         transaction_date, transaction = self.transact(asx_code, date, price, -quantity)
         self.adjust_balance(price, quantity)
+        self.balance -= self.brokerage(price * quantity)
         self.adjust_holdings(asx_code, transaction_date, transaction)
