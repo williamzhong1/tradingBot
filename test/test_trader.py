@@ -3,7 +3,6 @@ import trader
 import datetime
 from unittest.mock import patch
 
-
 # Testing stock function will make API call.
 
 """
@@ -13,7 +12,6 @@ class TestStock(unittest.TestCase):
         test_data = bhp.get_data("BHP")
         self.assertEqual("BHP", test_data["Meta Data"]["2. Symbol"][:3])
 """
-
 
 
 class TestTrader(unittest.TestCase):
@@ -81,13 +79,25 @@ class TestTrader(unittest.TestCase):
         'Time Series (Daily)': {
             '2020-01-03': {'1. open': '39.8300', '2. high': '40.2250',
                            '3. low': '39.7900', '4. close': '40.0300',
+                           '5. volume': '5272166'},
+            '2020-01-04': {'1. open': '20', '2. high': '21',
+                           '3. low': '19', '4. close': '40.0300',
                            '5. volume': '5272166'}}
     })
     def test_buy(self, mock_stock_data):
         self.sample_trader.buy("BHP", "2020-01-01", 40, 10)
         self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-03"]["quantity"], 10)
-        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-03"]["purchase price"], 40)
-        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-03"]["order date"], "2020-01-01")
+        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-03"]["purchase_price"], 40)
+        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-03"]["order_date"], "2020-01-01")
+        self.assertEqual(self.sample_trader.balance, 100000000 - (40 * 10))
+        self.sample_trader.buy("BHP", "2020-01-04", 20, 10)
+        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-04"]["quantity"], 10)
+        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-04"]["purchase_price"], 20)
+        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-04"]["order_date"], "2020-01-04")
+        self.sample_trader.buy("BHP", "2020-01-04", 20.5, 20)
+        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-04"]["purchase_price"], 20.5)
+        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-04"]["quantity"], 30)
+        self.assertEqual(self.sample_trader.holdings["BHP"]["2020-01-04"]["order_date"], "2020-01-04")
 
 
 if __name__ == "__main__":

@@ -57,20 +57,12 @@ class Trader:
                 trading_days = set(self.data[asx_code]["Time Series (Daily)"].keys()) & set(
                     x.strftime("%Y-%m-%d") for x in self.date_range)
                 trading_days = sorted(trading_days)
-                deltas = [dt.date.fromisoformat(x) - dt.date.fromisoformat(attempted_purchase_date) for x in
-                          trading_days]
-                if attempted_purchase_date not in trading_days:
-                    deltas = [x for x in deltas if x >= dt.timedelta(0)]
-                    """
-                    Only want positive deltas because negative deltas mean the trading date occurred before the 
-                    attempted purchase date. Cannot go back in time to perform a trade therefore only positive 
-                    time deltas are included.
-                    """
-                for i in deltas:
-                    potential_purchase_date = dt.date.fromisoformat(attempted_purchase_date) + i
-                    prices = self.data[asx_code]["Time Series (Daily)"][potential_purchase_date.strftime("%Y-%m-%d")]
+                trading_days = [x for x in trading_days if dt.date.fromisoformat(x) >=
+                                dt.date.fromisoformat(attempted_purchase_date)]
+                for i in trading_days:
+                    prices = self.data[asx_code]["Time Series (Daily)"][i]
                     if float(prices["3. low"]) <= purchase_price <= float(prices["2. high"]):
-                        return potential_purchase_date.strftime("%Y-%m-%d")
+                        return i
                     else:
                         raise KeyError("Cannot purchase at {}.".format(purchase_price))
 
@@ -80,14 +72,18 @@ class Trader:
         transaction_date = self.check_market(asx_code, date, purchase_price)
         if self.balance >= purchase_price * quantity:
             transaction = {transaction_date: {
-                "purchase price": purchase_price,
+                "purchase_price": purchase_price,
                 "quantity": quantity,
-                "order date": date
+                "order_date": date
             }}
         self.balance -= purchase_price * quantity
         if self.check_holdings(asx_code) == 1:
             self.holdings[asx_code] = transaction
+        elif self.check_holdings(asx_code) == 0 and transaction_date in self.holdings[asx_code].keys():
+            self.holdings[asx_code][transaction_date]["purchase_price"] = transaction[transaction_date]["purchase_price"]
+            old_quantity = self.holdings[asx_code][transaction_date]["quantity"]
+            new_quantity = old_quantity + transaction[transaction_date]["quantity"]
+            self.holdings[asx_code][transaction_date]["quantity"] = new_quantity
+            self.holdings[asx_code][transaction_date]["order_date"] = transaction[transaction_date]["order_date"]
         else:
-            current_holdings = self.holdings[asx_code]
-            current_holdings[date] = transaction
-            self.holdings.update(current_holdings)
+            self.holdings[asx_code][transaction_date] = transaction[transaction_date]
