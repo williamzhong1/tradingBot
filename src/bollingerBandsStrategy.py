@@ -9,7 +9,8 @@ def calculate_average(prices):
 
 
 class BollingerTrader(trader.Trader):
-    def __init__(self, balance, init_date, days, window, std_devs):
+    def __init__(self, balance, init_date, days, window, std_devs, asx_code):
+        self.asx_code = asx_code
         self.data = {}
         self.holdings = {}
         self.balance = balance
@@ -40,8 +41,8 @@ class BollingerTrader(trader.Trader):
         open_price_series = self.convert_to_pandas_series()
         open_mov_avg = self.moving_averages(open_price_series)
         open_mov_std_dev = self.moving_std_dev(open_price_series)
-        upper = open_mov_avg + self.standard_deviations * open_mov_std_dev
-        lower = open_mov_avg - self.standard_deviations * open_mov_std_dev
+        upper = open_mov_avg.add(open_mov_std_dev.mul(self.standard_deviations))
+        lower = open_mov_avg.sub(open_mov_std_dev.mul(self.standard_deviations))
         return upper.tolist(), lower.tolist()
 
     def plot_bands(self):
@@ -54,3 +55,6 @@ class BollingerTrader(trader.Trader):
         plt.xticks(rotation=70)
         plt.show()
 
+
+x = BollingerTrader(10000, "2020-01-01", 100, 10, 2, "CBA")
+x.plot_bands()
