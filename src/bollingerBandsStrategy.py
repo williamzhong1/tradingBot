@@ -35,7 +35,7 @@ class BollingerTrader(trader.Trader):
         open_prices = []
         for i in raw_data.keys():
             open_prices.append(float(raw_data[i]["1. open"]))
-        return pd.Series(data=open_prices[::-1], dtype="float")  # Index data to reverse format
+        return pd.Series(data=open_prices[::-1], dtype="float")  # Index data to reverse order
 
     def create_bands(self):
         open_price_series = self.convert_to_pandas_series()
@@ -48,8 +48,7 @@ class BollingerTrader(trader.Trader):
     def plot_bands(self):
         fig, ax = plt.subplots(1, 1)
         upper, lower, roll_avg = self.create_bands()
-        print(upper, lower, roll_avg)
-        dates = list(self.data[self.asx_code]["Time Series (Daily)"].keys())[::-1]  # Index data to reverse format
+        dates = list(self.data[self.asx_code]["Time Series (Daily)"].keys())[::-1]  # Index data to reverse order
         ax.plot(dates, self.convert_to_pandas_series())
         ax.fill_between(dates, lower, upper, color="grey")
         ax.plot(dates, roll_avg)
@@ -57,6 +56,7 @@ class BollingerTrader(trader.Trader):
         ax.title.set_text(self.asx_code)
         plt.xticks(rotation=70)
         plt.show()
+
 
 
 x = BollingerTrader(10000, "2020-01-01", 100, 10, 2, "CBA")
