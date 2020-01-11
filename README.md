@@ -41,11 +41,13 @@ Alternatively you may inherit these buy sell methods and build a strategy around
 
 `class strategy(trader.Trader)...`
 
+An example for this usage is included in `src/bollingerBandsStrategy.py`.
+
 ### Prerequisites
 
 This project depends on the `requests` module which can be installed with `pip` or `conda`.
 
-The project also depends on `sqlite3` and `datetime` but these should be included in the standard library
+The project also depends on `sqlite3`, `json` and `datetime` but these should be included in the standard library
 and do not need to be installed.
 
 This project also requires an API key which is set an environment variable APIKEY. Alternatively you may open the 
