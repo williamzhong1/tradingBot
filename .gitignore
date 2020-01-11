@@ -1,2 +1,8 @@
-/.idea/
-*.sqlite3
+*.csv
+*.db
+*.idea
+*.h5
+*.spyproject
+*.pyc
+*.sqlite
+*checkpoints
