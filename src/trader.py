@@ -2,6 +2,7 @@ import requests
 import datetime as dt
 import os
 import sqlite3
+import json
 
 key = os.environ["APIKEY"]
 conn = sqlite3.connect("data.sqlite3")
@@ -56,7 +57,7 @@ class Stock:
             conn.commit()
             return r
         else:
-            return share_data[0][2]
+            return json.loads(share_data[0][2].replace("\'", "\""))  # Saving to database converted to str
 
 
 class Trader:
