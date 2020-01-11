@@ -22,10 +22,10 @@ class BollingerTrader(trader.Trader):
         self.standard_deviations = std_devs
 
     def moving_averages(self, pandas_series):
-        return pandas_series.rolling(window=self.window).std()
+        return pandas_series.rolling(window=self.window).mean()
 
     def moving_std_dev(self, pandas_series):
-        return pandas_series.rolling(window=self.window).mean()
+        return pandas_series.rolling(window=self.window).std()
 
     def convert_to_pandas_series(self):
         if self.check_data(self.asx_code) == 1:
@@ -43,14 +43,16 @@ class BollingerTrader(trader.Trader):
         open_mov_std_dev = self.moving_std_dev(open_price_series)
         upper = open_mov_avg.add(open_mov_std_dev.mul(self.standard_deviations))
         lower = open_mov_avg.sub(open_mov_std_dev.mul(self.standard_deviations))
-        return upper.tolist(), lower.tolist()
+        return upper.tolist(), lower.tolist(), open_mov_avg.tolist()
 
     def plot_bands(self):
         fig, ax = plt.subplots(1, 1)
-        upper, lower = self.create_bands()
+        upper, lower, roll_avg = self.create_bands()
+        print(upper, lower, roll_avg)
         dates = list(self.data[self.asx_code]["Time Series (Daily)"].keys())
         ax.plot(dates, self.convert_to_pandas_series())
         ax.fill_between(dates, lower, upper, color="grey")
+        ax.plot(dates, roll_avg)
         ax.set_xticks([x for idx, x in enumerate(dates) if idx % 10 == 0])
         plt.xticks(rotation=70)
         plt.show()
