@@ -4,5 +4,6 @@
 *.h5
 *.spyproject
 *.pyc
+*.sqlite3
 *.sqlite
 *checkpoints
