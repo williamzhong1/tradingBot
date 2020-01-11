@@ -1,7 +1,7 @@
 import trader
 import pandas as pd
 import matplotlib.pyplot as plt
-import json
+import datetime as dt
 
 
 def calculate_average(prices):
@@ -9,16 +9,16 @@ def calculate_average(prices):
 
 
 class BollingerTrader(trader.Trader):
-    def __init__(self, asx_code, window, std_devs):
-        """
-        :param asx_code: ASX code
-        :param window: Window to calculate moving average and standard deviation in days
-        :param std_devs: Number of standard deviations for Bollinger bands
-        """
+    def __init__(self, balance, init_date, days, window, std_devs):
+        self.data = {}
+        self.holdings = {}
+        self.balance = balance
+        self.start = dt.date.fromisoformat(init_date)
+        self.days = days
+        deltas = [dt.timedelta(days=x) for x in range(self.days)]
+        self.date_range = [self.start + delta for delta in deltas]
         self.window = window
         self.standard_deviations = std_devs
-        self.asx_code = asx_code
-        self.data = {}
 
     def moving_averages(self, pandas_series):
         return pandas_series.rolling(window=self.window).std()
@@ -50,10 +50,7 @@ class BollingerTrader(trader.Trader):
         dates = list(self.data[self.asx_code]["Time Series (Daily)"].keys())
         ax.plot(dates, self.convert_to_pandas_series())
         ax.fill_between(dates, lower, upper, color="grey")
-        ax.set_xticks([x for idx, x in enumerate(dates) if idx%10 == 0])
+        ax.set_xticks([x for idx, x in enumerate(dates) if idx % 10 == 0])
         plt.xticks(rotation=70)
         plt.show()
 
-
-x = BollingerTrader("BHP", 10, 5)
-x.plot_bands()
