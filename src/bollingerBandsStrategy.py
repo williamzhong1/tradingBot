@@ -60,7 +60,7 @@ class BollingerTrader(trader.Trader):
         intersect_lower_dates, intersect_lower_price, intersect_upper_dates, intersect_upper_price = \
             self.find_intersection_with_bands()
         ax.scatter(intersect_lower_dates, intersect_lower_price, marker='o', color='g')
-        ax.scatter(intersect_upper_dates, intersect_upper_price, marker='o', color='g')
+        ax.scatter(intersect_upper_dates, intersect_upper_price, marker='o', color='r')
         plt.show()
         return fig, ax
 
@@ -94,7 +94,7 @@ def main():
     example = BollingerTrader(100000, "2019-09-06", 200, 10, 2, "CBA", 10, 0.1)
     # Make transactions which intersect with the bottom or lower band
     example.make_transactions()
-    # Plot transactions points
+    # Plot transactions points: red means sell green means buy
     example.plot_bands_transactions()
     # Print holdings resulting from these transactions
     print(example.holdings)
